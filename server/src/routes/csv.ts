@@ -35,7 +35,7 @@ csvRouter.post('/upload', upload.single('csv'), async (req: Request, res: Respon
         await transactionCollection.insertOne(transaction);
       })
       .on('end', async () => {
-        const transactions = await transactionCollection.find({}).toArray();
+        const transactions = await transactionCollection.find({}).skip(0).limit(10).toArray();
         return res.status(201).json({ transactions });
       });
   } catch (error) {
@@ -43,11 +43,47 @@ csvRouter.post('/upload', upload.single('csv'), async (req: Request, res: Respon
   }
 });
 
-csvRouter.get('/', async (req: Request, res: Response) => {
-  const db = await getMongoInstance();
-  const transactionCollection = getTransactionCollection(db);
-  const transactions = await transactionCollection.find({}).toArray();
-  return res.status(200).json({ transactions });
-})
+csvRouter.get('/:page', async (req: Request, res: Response) => {
+  try {
+    const db = await getMongoInstance();
+    const transactionCollection = getTransactionCollection(db);
+
+    const page = parseInt(req.params.page as string, 10) || 1;
+
+    const itemsPerPage = 10;
+
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    const transactions = await transactionCollection.find({}).skip(startIndex).limit(itemsPerPage).toArray();
+
+    const hasNextPage = endIndex < (await transactionCollection.countDocuments({}));
+
+    return res.status(200).json({ transactions, hasNextPage });
+  } catch (error) {
+    console.error('Erro durante a solicitação:', error);
+    return res.status(500).json({ error: 'Erro ao retornar paginação' });
+  }
+});
+
+// FIXME: Esse endpoint está retornando TODOS os resultados, precisa ser paginado
+csvRouter.get('/search/:search', async (req: Request, res: Response) => {
+  try {
+    const { search } = req.params;
+
+    const db = await getMongoInstance();
+    const transactionCollection = getTransactionCollection(db);
+
+    const searchResult = await transactionCollection
+      .find({ $text: { $search: search } })
+      .toArray();
+
+    return res.status(200).json({ transactions: searchResult });
+  } catch (error) {
+    console.error('Erro durante a solicitação:', error);
+    return res.status(500).json({ error: 'Erro ao retornar pesquisa' });
+  }
+});
+
 
 export { csvRouter };

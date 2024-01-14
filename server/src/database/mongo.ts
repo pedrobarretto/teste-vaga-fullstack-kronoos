@@ -14,6 +14,7 @@ const connectToMongoDB = async (): Promise<Db> => {
 
     console.log('Conexão com o MongoDB estabelecida com sucesso');
 
+    db.collection('transactions').createIndex({ "$**": "text" });
     cachedDb = db;
     return db;
   } catch (error) {
