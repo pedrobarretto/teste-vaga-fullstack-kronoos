@@ -69,7 +69,6 @@ csvRouter.get('/:page', async (req: Request, res: Response) => {
   }
 });
 
-// FIXME: Esse endpoint está retornando TODOS os resultados, precisa ser paginado
 csvRouter.get('/search/:search/:page', async (req: Request, res: Response) => {
   try {
     const { search } = req.params;
