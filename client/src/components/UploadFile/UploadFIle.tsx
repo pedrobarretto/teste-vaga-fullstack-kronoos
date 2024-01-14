@@ -1,36 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { Button, Input, Stack } from '@chakra-ui/react';
-import { useTransactions } from '../../store';
+import { useTransactions, usePagination } from '../../store';
 
 export function UploadFile() {
   const [file, setFile] = useState<File | null>(null);
-  const [searchValue, setSearchValue] = useState<string>('');
   const { setTransactions } = useTransactions();
+  const { search, setSearch, setHasNextPage } = usePagination();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files && event.target.files[0];
     setFile(selectedFile || null);
   };
 
-  // const getData = async () => {
-  //   try {
-  //     const response = await fetch('http://localhost:8080/data/1', { method: 'GET' });
-
-  //     if (!response.ok) {
-  //       throw new Error(`Erro na solicitação: ${response.status}`);
-  //     }
-
-  //     const responseBody = await response.json();
-  //     setTransactions(responseBody.transactions);
-  //   } catch (error) {
-  //     console.error('Erro durante a solicitação:', error);
-  //   }
-  // };
-
   const getData = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/data/search/${searchValue}`, { method: 'GET' });
+      const url = search === '' ? `http://localhost:8080/data/1` : `http://localhost:8080/data/search/${search}/1`;
+      const response = await fetch(url, { method: 'GET' });
 
       if (!response.ok) {
         throw new Error(`Erro na solicitação: ${response.status}`);
@@ -38,6 +24,7 @@ export function UploadFile() {
 
       const responseBody = await response.json();
       setTransactions(responseBody.transactions);
+      setHasNextPage(responseBody.hasNextPage);
     } catch (error) {
       console.error('Erro durante a solicitação:', error);
     }
@@ -61,6 +48,7 @@ export function UploadFile() {
       if (response.ok) {
         const responseBody = await response.json();
         setTransactions(responseBody.transactions);
+        setHasNextPage(responseBody.hasNextPage);
       } else {
         console.error('Falha no upload.');
       }
@@ -91,8 +79,8 @@ export function UploadFile() {
       />
       <Input
         placeholder="Pesquisar..."
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
         color="#fff"
         width={{ base: '100%', md: 'auto' }}
         marginBottom={{ base: '2', md: '0' }}
@@ -100,7 +88,7 @@ export function UploadFile() {
       <Button onClick={handleUpload} isDisabled={!file} bg="#000" color="#fff">
         Enviar Arquivo
       </Button>
-      <Button onClick={getData} isDisabled={searchValue === ''} bg="#000" color="#fff">
+      <Button onClick={getData} bg="#000" color="#fff">
         Atualizar Tabela
       </Button>
     </Stack>

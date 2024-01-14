@@ -36,7 +36,8 @@ csvRouter.post('/upload', upload.single('csv'), async (req: Request, res: Respon
       })
       .on('end', async () => {
         const transactions = await transactionCollection.find({}).skip(0).limit(10).toArray();
-        return res.status(201).json({ transactions });
+        const hasNextPage = 0 < (await transactionCollection.countDocuments({}));
+        return res.status(201).json({ transactions, hasNextPage });
       });
   } catch (error) {
     res.status(500).json({ error });
@@ -49,13 +50,15 @@ csvRouter.get('/:page', async (req: Request, res: Response) => {
     const transactionCollection = getTransactionCollection(db);
 
     const page = parseInt(req.params.page as string, 10) || 1;
-
     const itemsPerPage = 10;
-
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
-    const transactions = await transactionCollection.find({}).skip(startIndex).limit(itemsPerPage).toArray();
+    const transactions = await transactionCollection
+      .find({})
+      .skip(startIndex)
+      .limit(itemsPerPage)
+      .toArray();
 
     const hasNextPage = endIndex < (await transactionCollection.countDocuments({}));
 
@@ -67,18 +70,27 @@ csvRouter.get('/:page', async (req: Request, res: Response) => {
 });
 
 // FIXME: Esse endpoint está retornando TODOS os resultados, precisa ser paginado
-csvRouter.get('/search/:search', async (req: Request, res: Response) => {
+csvRouter.get('/search/:search/:page', async (req: Request, res: Response) => {
   try {
     const { search } = req.params;
 
     const db = await getMongoInstance();
     const transactionCollection = getTransactionCollection(db);
 
+    const page = parseInt(req.params.page as string, 10) || 1;
+    const itemsPerPage = 10;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
     const searchResult = await transactionCollection
-      .find({ $text: { $search: search } })
-      .toArray();
+    .find({ $text: { $search: search } })
+    .skip(startIndex)
+    .limit(itemsPerPage)
+    .toArray();
 
-    return res.status(200).json({ transactions: searchResult });
+    const hasNextPage = endIndex < (searchResult.length - itemsPerPage);
+    
+    return res.status(200).json({ transactions: searchResult, hasNextPage });
   } catch (error) {
     console.error('Erro durante a solicitação:', error);
     return res.status(500).json({ error: 'Erro ao retornar pesquisa' });

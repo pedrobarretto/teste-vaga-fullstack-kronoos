@@ -10,18 +10,16 @@ import {
   Button,
   Text
 } from '@chakra-ui/react';
-import { useState } from 'react';
 import { Transaction } from '../../interfaces';
-import { useTransactions } from '../../store';
+import { usePagination, useTransactions } from '../../store';
 
 export function TransactionTable() {
   const { transactions, setTransactions } = useTransactions();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(true);
+  const { page, setPage, hasNextPage, setHasNextPage } = usePagination();
 
   const handleNextPage = async () => {
-    const prev = currentPage;
-    setCurrentPage((prev) => prev + 1);
+    const prev = page;
+    setPage(prev + 1);
     const response = await fetch(`http://localhost:8080/data/${prev + 1}`, { method: 'GET' });
     const responseBody = await response.json();
     setTransactions(responseBody.transactions);
@@ -29,8 +27,8 @@ export function TransactionTable() {
   };
 
   const handlePrevPage = async () => {
-    const prev = currentPage;
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+    const prev = page;
+    setPage(Math.max(prev - 1, 1));
     const response = await fetch(`http://localhost:8080/data/${prev - 1}`, { method: 'GET' });
     const responseBody = await response.json();
     setTransactions(responseBody.transactions);
@@ -85,7 +83,11 @@ export function TransactionTable() {
             <Tr key={transaction._id?.toString()}>
               {Object.values(transaction).map((value, index) => {
                 return (
-                  <Td key={index} style={{ color: handleColor(transaction) }}>{value instanceof Date ? value.toDateString() : String(value)}</Td>
+                  <Td
+                    key={index}
+                    style={{ color: handleColor(transaction) }}>
+                    {value instanceof Date ? value.toDateString() : String(value)}
+                  </Td>
                 )
               })}
             </Tr>
@@ -94,11 +96,11 @@ export function TransactionTable() {
       </Table>
 
       <Box mt={4} display="flex" justifyContent="space-between">
-        <Button onClick={handlePrevPage} isDisabled={currentPage === 1}>
+        <Button onClick={handlePrevPage} isDisabled={page === 1}>
           Página Anterior
         </Button>
         <Text>
-          Página {currentPage}
+          Página {page}
         </Text>
         <Button onClick={handleNextPage} isDisabled={!hasNextPage}>
           Próxima Página

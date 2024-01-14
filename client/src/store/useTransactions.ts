@@ -2,12 +2,12 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { Transaction } from '../interfaces'
 
-interface BearState {
+interface TransactionState {
   transactions: Transaction[]
   setTransactions: (transactions: Transaction[]) => void
 }
 
-export const useTransactions = create<BearState>()(
+export const useTransactions = create<TransactionState>()(
   devtools(
     persist(
       (set) => ({
