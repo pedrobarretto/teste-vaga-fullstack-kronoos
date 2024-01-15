@@ -1,3 +1,38 @@
+# Executando o Projeto Fullstack Kronoos
+
+Este é um guia simples para executar o projeto Fullstack Kronoos localmente em seu ambiente de desenvolvimento.
+
+### Pré-requisitos
+
+- [Node.js](https://nodejs.org/) instalado
+- [MongoDB](https://www.mongodb.com/try/download/community) instalado e em execução na porta padrão (27017)
+
+### Passos
+
+1. **Clone o Repositório:**
+   ```bash git clone git@github.com:pedrobarretto/teste-vaga-fullstack-kronoos.git```
+
+2. **Instale as dependências necessárias**
+   ```
+   cd server
+   npm install
+   ```
+   ```
+   cd client
+   npm install
+   ```
+3. **Execute o projeto**
+   ```
+   cd server
+   npm run dev
+   ```
+   ```
+   cd client
+   npm run dev
+   ```
+4. **Abra a aplicação em seu navegador**
+   [http://localhost:5137](http://localhost:5137)
+
 # Teste Prático para Desenvolvedor Full Stack Kronoos
 
 Você foi designado para desenvolver uma aplicação full stack para lidar com grandes volumes de dados. A aplicação consistirá em um frontend usando Vite ou Next.js, se comunicando com um backend que pode ser construído utilizando HTTP ou WebSocket para troca de dados. O backend será responsável por fornecer uma massa de dados considerável (cerca de 30GB). Além disso, a aplicação deve ser capaz de lidar com dados fornecidos em um formato CSV mal formatado.
