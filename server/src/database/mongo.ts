@@ -1,6 +1,6 @@
 import { MongoClient, Db } from 'mongodb';
 
-const url = 'mongodb://localhost:27017';
+const url = 'mongodb://mongo:27017';
 const dbName = 'kronoos';
 
 let cachedDb: Db | null = null;
